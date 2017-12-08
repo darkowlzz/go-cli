@@ -52,6 +52,10 @@ func NewTemplateInspectorFromString(out io.Writer, tmplStr string) (Inspector, e
 // reference
 type GetRefFunc func(ref string) (interface{}, []byte, error)
 
+// GetRefListFunc is a function which used by Inspect to fetch an object from a
+// reference
+type GetRefListFunc func() (interface{}, []byte, error)
+
 // Inspect fetches objects by reference using GetRefFunc and writes the json
 // representation to the output writer.
 func Inspect(out io.Writer, references []string, tmplStr string, getRef GetRefFunc) error {
@@ -71,6 +75,34 @@ func Inspect(out io.Writer, references []string, tmplStr string, getRef GetRefFu
 		if err := inspector.Inspect(element, raw); err != nil {
 			inspectErr = err
 			break
+		}
+	}
+
+	if err := inspector.Flush(); err != nil {
+		logrus.Errorf("%s\n", err)
+	}
+
+	if inspectErr != nil {
+		return cli.StatusError{StatusCode: 1, Status: inspectErr.Error()}
+	}
+	return nil
+}
+
+// InspectAll fetches a list of object references using GetRefListFunc, writing the
+// representation to the output writer.
+func InspectAll(out io.Writer, tmplStr string, getRefList GetRefListFunc) error {
+	inspector, err := NewTemplateInspectorFromString(out, tmplStr)
+	if err != nil {
+		return cli.StatusError{StatusCode: 64, Status: err.Error()}
+	}
+
+	var inspectErr error
+	elements, raw, err := getRefList()
+	if err != nil {
+		inspectErr = err
+	} else {
+		if err := inspector.Inspect(elements, raw); err != nil {
+			inspectErr = err
 		}
 	}
 

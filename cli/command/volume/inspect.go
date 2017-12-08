@@ -2,7 +2,7 @@ package volume
 
 import (
 	"github.com/dnephin/cobra"
-	"github.com/storageos/go-cli/cli"
+	"github.com/storageos/go-api/types"
 	"github.com/storageos/go-cli/cli/command"
 	"github.com/storageos/go-cli/cli/command/inspect"
 	"github.com/storageos/go-cli/pkg/validation"
@@ -19,9 +19,14 @@ func newInspectCommand(storageosCli *command.StorageOSCli) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "inspect [OPTIONS] VOLUME [VOLUME...]",
 		Short: "Display detailed information on one or more volumes",
-		Args:  cli.RequiresMinArgs(1),
+		Args:  nil,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opt.names = args
+
+			if len(opt.names) == 0 {
+				return runInspectAll(storageosCli, opt)
+			}
+
 			return runInspect(storageosCli, opt)
 		},
 	}
@@ -44,4 +49,15 @@ func runInspect(storageosCli *command.StorageOSCli, opt inspectOptions) error {
 	}
 
 	return inspect.Inspect(storageosCli.Out(), opt.names, opt.format, getFunc)
+}
+
+func runInspectAll(storageosCli *command.StorageOSCli, opt inspectOptions) error {
+	client := storageosCli.Client()
+
+	getListFunc := func() (interface{}, []byte, error) {
+		intfs, err := client.VolumeList(types.ListOptions{})
+		return intfs, nil, err
+	}
+
+	return inspect.InspectAll(storageosCli.Out(), opt.format, getListFunc)
 }

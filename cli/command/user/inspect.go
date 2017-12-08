@@ -3,7 +3,7 @@ package user
 import (
 	"github.com/dnephin/cobra"
 	//storageos "github.com/storageos/go-api"
-	"github.com/storageos/go-cli/cli"
+	"github.com/storageos/go-api/types"
 	"github.com/storageos/go-cli/cli/command"
 	"github.com/storageos/go-cli/cli/command/inspect"
 )
@@ -19,9 +19,14 @@ func newInspectCommand(storageosCli *command.StorageOSCli) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "inspect [OPTIONS] USER [USER...]",
 		Short: "Display detailed information on one or more user(s)",
-		Args:  cli.RequiresMinArgs(1),
+		Args:  nil,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opt.users = args
+
+			if len(opt.users) == 0 {
+				return runInspectAll(storageosCli, opt)
+			}
+
 			return runInspect(storageosCli, opt)
 		},
 	}
@@ -40,4 +45,15 @@ func runInspect(storageosCli *command.StorageOSCli, opt inspectOptions) error {
 	}
 
 	return inspect.Inspect(storageosCli.Out(), opt.users, opt.format, getFunc)
+}
+
+func runInspectAll(storageosCli *command.StorageOSCli, opt inspectOptions) error {
+	client := storageosCli.Client()
+
+	getListFunc := func() (interface{}, []byte, error) {
+		intfs, err := client.UserList(types.ListOptions{})
+		return intfs, nil, err
+	}
+
+	return inspect.InspectAll(storageosCli.Out(), opt.format, getListFunc)
 }

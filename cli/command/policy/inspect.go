@@ -2,7 +2,7 @@ package policy
 
 import (
 	"github.com/dnephin/cobra"
-	"github.com/storageos/go-cli/cli"
+	"github.com/storageos/go-api/types"
 	"github.com/storageos/go-cli/cli/command"
 	"github.com/storageos/go-cli/cli/command/inspect"
 )
@@ -18,9 +18,14 @@ func newInspectCommand(storageosCli *command.StorageOSCli) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "inspect [OPTIONS] POLICY [POLICY...]",
 		Short: "Display detailed information on one or more polic(y|ies)",
-		Args:  cli.RequiresMinArgs(1),
+		Args:  nil,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opt.policies = args
+
+			if len(opt.policies) == 0 {
+				return runInspectAll(storageosCli, opt)
+			}
+
 			return runInspect(storageosCli, opt)
 		},
 	}
@@ -39,4 +44,15 @@ func runInspect(storageosCli *command.StorageOSCli, opt inspectOptions) error {
 	}
 
 	return inspect.Inspect(storageosCli.Out(), opt.policies, opt.format, getFunc)
+}
+
+func runInspectAll(storageosCli *command.StorageOSCli, opt inspectOptions) error {
+	client := storageosCli.Client()
+
+	getListFunc := func() (interface{}, []byte, error) {
+		intfs, err := client.PolicyList(types.ListOptions{})
+		return intfs, nil, err
+	}
+
+	return inspect.InspectAll(storageosCli.Out(), opt.format, getListFunc)
 }
