@@ -54,7 +54,7 @@ type GetRefFunc func(ref string) (interface{}, []byte, error)
 
 // GetRefListFunc is a function which used by Inspect to fetch an object from a
 // reference
-type GetRefListFunc func() (interface{}, []byte, error)
+type GetRefListFunc func() ([]interface{}, []byte, error)
 
 // Inspect fetches objects by reference using GetRefFunc and writes the json
 // representation to the output writer.
@@ -101,8 +101,10 @@ func InspectAll(out io.Writer, tmplStr string, getRefList GetRefListFunc) error 
 	if err != nil {
 		inspectErr = err
 	} else {
-		if err := inspector.Inspect(elements, raw); err != nil {
-			inspectErr = err
+		for _, e := range elements {
+			if err := inspector.Inspect(e, raw); err != nil {
+				inspectErr = err
+			}
 		}
 	}
 

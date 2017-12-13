@@ -49,8 +49,12 @@ func runInspect(storageosCli *command.StorageOSCli, opt inspectOptions) error {
 func runInspectAll(storageosCli *command.StorageOSCli, opt inspectOptions) error {
 	client := storageosCli.Client()
 
-	getListFunc := func() (interface{}, []byte, error) {
-		intfs, err := client.PoolList(types.ListOptions{})
+	getListFunc := func() ([]interface{}, []byte, error) {
+		pools, err := client.PoolList(types.ListOptions{})
+		intfs := make([]interface{}, len(pools))
+		for i, p := range pools {
+			intfs[i] = p
+		}
 		return intfs, nil, err
 	}
 

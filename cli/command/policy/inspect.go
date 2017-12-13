@@ -16,7 +16,7 @@ func newInspectCommand(storageosCli *command.StorageOSCli) *cobra.Command {
 	var opt inspectOptions
 
 	cmd := &cobra.Command{
-		Use:   "inspect [OPTIONS] POLICY [POLICY...]",
+		Use:   "inspect [OPTIONS] [POLICY...]",
 		Short: "Display detailed information on one or more polic(y|ies)",
 		Args:  nil,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -49,8 +49,14 @@ func runInspect(storageosCli *command.StorageOSCli, opt inspectOptions) error {
 func runInspectAll(storageosCli *command.StorageOSCli, opt inspectOptions) error {
 	client := storageosCli.Client()
 
-	getListFunc := func() (interface{}, []byte, error) {
-		intfs, err := client.PolicyList(types.ListOptions{})
+	getListFunc := func() ([]interface{}, []byte, error) {
+		policies, err := client.PolicyList(types.ListOptions{})
+		intfs := []interface{}{}
+
+		for id, policy := range policies {
+			policy := types.PolicyWithID{Policy: policy, ID: id}
+			intfs = append(intfs, policy)
+		}
 		return intfs, nil, err
 	}
 
