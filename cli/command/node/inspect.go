@@ -17,8 +17,8 @@ func newInspectCommand(storageosCli *command.StorageOSCli) *cobra.Command {
 	var opt inspectOptions
 
 	cmd := &cobra.Command{
-		Use:   "inspect [OPTIONS] NODE [NODE...]",
-		Short: "Display detailed information on one or more nodes",
+		Use:   "inspect [OPTIONS] [NODE...]",
+		Short: "Display detailed information on one or more nodes - if none are specified all nodes are inspected",
 		Args:  nil,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opt.names = args

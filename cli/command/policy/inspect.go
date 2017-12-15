@@ -17,7 +17,7 @@ func newInspectCommand(storageosCli *command.StorageOSCli) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "inspect [OPTIONS] [POLICY...]",
-		Short: "Display detailed information on one or more polic(y|ies)",
+		Short: "Display detailed information on one or more polic(y|ies) - if none are specified all policies are inspected (with ID listed)",
 		Args:  nil,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opt.policies = args

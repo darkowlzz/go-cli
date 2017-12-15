@@ -16,8 +16,8 @@ func newInspectCommand(storageosCli *command.StorageOSCli) *cobra.Command {
 	var opt inspectOptions
 
 	cmd := &cobra.Command{
-		Use:   "inspect [OPTIONS] NAMESPACE [NAMESPACE...]",
-		Short: "Display detailed information on one or more namespaces",
+		Use:   "inspect [OPTIONS] [NAMESPACE...]",
+		Short: "Display detailed information on one or more namespaces - if none are specified all are namespaces are inspected",
 		Args:  nil,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opt.names = args
